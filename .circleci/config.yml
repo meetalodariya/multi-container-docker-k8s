@@ -32,16 +32,16 @@ jobs:
       - setup_remote_docker
       - run:
           name: "Build: Client"
-          command: docker build -t $DOCKERHUB_USERNAME/client:${SHORT_COMMIT_HASH} ./client
+          command: docker build -t $DOCKERHUB_USERNAME/client:$SHORT_COMMIT_HASH ./client
       - run:
           name: "Build: Server"
-          command: docker build -t $DOCKERHUB_USERNAME/server:${SHORT_COMMIT_HASH} ./server
+          command: docker build -t $DOCKERHUB_USERNAME/server:$SHORT_COMMIT_HASH ./server
       - run:
           name: "Build: Worker"
-          command: docker build -t $DOCKERHUB_USERNAME/worker:${SHORT_COMMIT_HASH} ./worker
+          command: docker build -t $DOCKERHUB_USERNAME/worker:$SHORT_COMMIT_HASH ./worker
       - run:
           name: "Build: NGINX"
-          command: docker build -t $DOCKERHUB_USERNAME/nginx:${SHORT_COMMIT_HASH} ./nginx
+          command: docker build -t $DOCKERHUB_USERNAME/nginx:$SHORT_COMMIT_HASH ./nginx
 
   deploy:
     docker:
