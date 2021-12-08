@@ -1,0 +1,67 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/node:14.0.0
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    steps:
+      - checkout
+      - run:
+          name: "Build: Client"
+          command: |
+            docker build -t test/client -f ./client/Dockerfile.dev ./client
+      - run:
+          name: "Test: Client"
+          command: |
+            docker run test/client npm run test -- --coverage
+
+  build:
+    docker:
+      - image: cimg/node:14.0.0
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
+    steps:
+      - checkout
+      - run:
+          name: "Build: Client"
+          command: docker build -t $DOCKERHUB_USERNAME/client:${SHORT_COMMIT_HASH} ./client
+      - run:
+          name: "Build: Server"
+          command: docker build -t $DOCKERHUB_USERNAME/server:${SHORT_COMMIT_HASH} ./server
+      - run:
+          name: "Build: Worker"
+          command: docker build -t $DOCKERHUB_USERNAME/worker:${SHORT_COMMIT_HASH} ./worker
+      - run:
+          name: "Build: NGINX"
+          command: docker build -t $DOCKERHUB_USERNAME/nginx:${SHORT_COMMIT_HASH} ./nginx
+
+    deploy:
+      docker:
+        - image: cimg/node:14.0.0
+          auth:
+            username: $DOCKERHUB_USERNAME
+            password: $DOCKERHUB_PASSWORD
+          environment:
+            SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
+      steps:
+        - checkout
+        - run:
+            name: "Push Images"
+            command: |
+              docker push $DOCKERHUB_USERNAME/client:${SHORT_COMMIT_HASH} | 
+              docker push $DOCKERHUB_USERNAME/server:${SHORT_COMMIT_HASH} |
+              docker push $DOCKERHUB_USERNAME/worker:${SHORT_COMMIT_HASH} |
+              docker push $DOCKERHUB_USERNAME/nginx:${SHORT_COMMIT_HASH}
+
+workflows:
+  build-test-deploy:
+    - test
+    - build:
+        requires:
+          - test
