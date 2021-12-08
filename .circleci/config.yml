@@ -46,7 +46,6 @@ jobs:
   deploy:
     docker:
       - image: cimg/node:14.0.0
-      - setup_remote_docker
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
@@ -54,6 +53,7 @@ jobs:
           SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: "Push Images"
           command: echo "Pushing the images"
