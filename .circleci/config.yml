@@ -41,27 +41,27 @@ jobs:
           name: "Build: NGINX"
           command: docker build -t $DOCKERHUB_USERNAME/nginx:${SHORT_COMMIT_HASH} ./nginx
 
-    deploy:
-      docker:
-        - image: cimg/node:14.0.0
-          auth:
-            username: $DOCKERHUB_USERNAME
-            password: $DOCKERHUB_PASSWORD
-          environment:
-            SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
-      steps:
-        - checkout
-        - run:
-            name: "Push Images"
-            command: |
-              docker push $DOCKERHUB_USERNAME/client:${SHORT_COMMIT_HASH} | 
-              docker push $DOCKERHUB_USERNAME/server:${SHORT_COMMIT_HASH} |
-              docker push $DOCKERHUB_USERNAME/worker:${SHORT_COMMIT_HASH} |
-              docker push $DOCKERHUB_USERNAME/nginx:${SHORT_COMMIT_HASH}
+  deploy:
+    docker:
+      - image: cimg/node:14.0.0
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
+    steps:
+      - checkout
+      - run:
+          name: "Push Images"
+          command: echo "Pushing the images"
 
 workflows:
   build-test-deploy:
-    - test
-    - build:
-        requires:
-          - test
+    jobs:
+      - test
+      - build:
+          requires:
+            - test
+      - deploy:
+          requires:
+            - build
