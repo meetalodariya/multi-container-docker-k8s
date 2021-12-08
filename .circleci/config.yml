@@ -9,6 +9,7 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: "Build: Client"
           command: |
@@ -28,6 +29,7 @@ jobs:
           SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           name: "Build: Client"
           command: docker build -t $DOCKERHUB_USERNAME/client:${SHORT_COMMIT_HASH} ./client
@@ -44,6 +46,7 @@ jobs:
   deploy:
     docker:
       - image: cimg/node:14.0.0
+      - setup_remote_docker
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
