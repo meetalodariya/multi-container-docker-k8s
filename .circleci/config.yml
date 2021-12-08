@@ -32,16 +32,16 @@ jobs:
       - setup_remote_docker
       - run:
           name: "Build: Client"
-          command: docker build ./client -t $DOCKERHUB_USERNAME/client
+          command: docker build ./client -t meetalodariya/client:$SHORT_COMMIT_HASH
       - run:
           name: "Build: Server"
-          command: docker build ./server -t $DOCKERHUB_USERNAME/server
+          command: docker build ./server -t meetalodariya/server:$SHORT_COMMIT_HASH
       - run:
           name: "Build: Worker"
-          command: docker build ./worker -t $DOCKERHUB_USERNAME/worker
+          command: docker build ./worker -t meetalodariya/worker:$SHORT_COMMIT_HASH
       - run:
           name: "Build: NGINX"
-          command: docker build ./nginx -t $DOCKERHUB_USERNAME/nginx
+          command: docker build ./nginx -t meetalodariya/nginx:$SHORT_COMMIT_HASH
 
   deploy:
     docker:
