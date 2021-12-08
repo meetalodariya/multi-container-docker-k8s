@@ -26,7 +26,7 @@ jobs:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
         environment:
-          SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
+          SHORT_COMMIT_HASH: $(CIRCLE_SHA1) | cut -c1-8
     steps:
       - checkout
       - setup_remote_docker
