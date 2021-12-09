@@ -59,12 +59,11 @@ jobs:
           version: 19.03.13
       - run:
           name: "Push Images"
-          command: |
-          docker push meetalodariya/client |
-          docker push meetalodariya/server |
-          docker push meetalodariya/worker |
-          docker push meetalodariya/nginx 
-
+          command: >-
+            docker push meetalodariya/client |
+            docker push meetalodariya/server |
+            docker push meetalodariya/worker |
+            docker push meetalodariya/nginx
 
 workflows:
   build-test-deploy:
