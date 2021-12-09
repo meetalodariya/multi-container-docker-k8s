@@ -4,9 +4,7 @@ jobs:
   test:
     docker:
       - image: cimg/node:14.0.0
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
+        command:
     steps:
       - checkout
       - setup_remote_docker:
@@ -23,34 +21,35 @@ jobs:
   build-deploy:
     docker:
       - image: cimg/node:14.0.0
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - setup_remote_docker:
           version: 19.03.13
       - run:
-          name: "Build: Client"
-          command: docker build ./client -t meetalodariya/client
-      - run:
-          name: "Build: Server"
-          command: docker build ./client -t meetalodariya/server
-      - run:
-          name: "Build: Worker"
-          command: docker build ./client -t meetalodariya/worker
+          name: "Set environment var"
+          command: |
+            short_commit_hash=${CIRCLE_SHA1:0:8}
+            echo 'export COMMIT_HASH="${short_commit_hash}"' >> $BASH_ENV
+      # - run:
+      #     name: "Build: Client"
+      #     command: docker build ./client -t meetalodariya/client:${COMMIT_HASH}
+      # - run:
+      #     name: "Build: Server"
+      #     command: docker build ./client -t meetalodariya/server:${COMMIT_HASH}
+      # - run:
+      #     name: "Build: Worker"
+      #     command: docker build ./client -t meetalodariya/worker:${COMMIT_HASH}
       - run:
           name: "Build: NGINX"
-          command: docker build ./client -t meetalodariya/nginx
+          command: |
+            echo "$COMMIT_HASH"
+            docker build ./client -t meetalodariya/nginx:${COMMIT_HASH}
       - run:
           name: "Push images"
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              docker push meetalodariya/client |
-              docker push meetalodariya/server |
-              docker push meetalodariya/worker |
-              docker push meetalodariya/nginx
+              docker push meetalodariya/nginx:${COMMIT_HASH}
             fi
 
 workflows:
