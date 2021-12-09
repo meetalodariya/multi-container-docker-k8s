@@ -32,9 +32,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: "Build: Client"
-          command: |
-            echo "$SHORT_COMMIT_HASH"
-            docker build ./client -t meetalodariya/client
+          command: docker build ./client -t meetalodariya/client
       - run:
           name: "Build: Server"
           command: docker build ./server -t meetalodariya/server
