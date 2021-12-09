@@ -9,7 +9,8 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           name: "Build: Client"
           command: |
@@ -29,7 +30,8 @@ jobs:
           SHORT_COMMIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -8)
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           name: "Build: Client"
           command: docker build ./client -t meetalodariya/client
