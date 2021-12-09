@@ -20,7 +20,7 @@ jobs:
           command: |
             docker run -e CI=true test/client npm run test -- --coverage
 
-  build:
+  build-deploy:
     docker:
       - image: cimg/node:14.0.0
         auth:
@@ -33,53 +33,48 @@ jobs:
       - run:
           name: "Build and save: Client"
           command: |
-            mkdir -p /build-caches
             docker build ./client -t meetalodariya/client
-            docker save -o /build-caches/client.tar meetalodariya/client
       - run:
           name: "Build and save: Server"
           command: |
             docker build ./client -t meetalodariya/server
-            docker save -o /build-caches/server.tar meetalodariya/server
       - run:
           name: "Build and save: Worker"
           command: |
             docker build ./client -t meetalodariya/worker
-            docker save -o /build-caches/worker.tar meetalodariya/worker
       - run:
           name: "Build and save: NGINX"
           command: |
             docker build ./client -t meetalodariya/nginx
-            docker save -o /build-caches/nginx.tar meetalodariya/nginx
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - /build-caches/*     
-
-  deploy:
-    docker:
-      - image: cimg/node:14.0.0
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 19.03.13
-      - attach_workspace:
-          at: /tmp/workspace    
       - run:
-          name: "Push Images"
-          command: >-
-            docker push meetalodariya/client |
-            docker push meetalodariya/server |
-            docker push meetalodariya/worker |
-            docker push meetalodariya/nginx
+          name: "Push images"
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              docker push meetalodariya/client |
+              docker push meetalodariya/server |
+              docker push meetalodariya/worker |
+              docker push meetalodariya/nginx
+            fi
+
+  # deploy:
+  #   docker:
+  #     - image: cimg/node:14.0.0
+  #       auth:
+  #         username: $DOCKERHUB_USERNAME
+  #         password: $DOCKERHUB_PASSWORD
+  #   steps:
+  #     - checkout
+  #     - setup_remote_docker:
+  #         version: 19.03.13
+  #     - run:
+  #         name: "Push Images"
+  #         command: >-
+  #           docker push meetalodariya/client |
+  #           docker push meetalodariya/server |
+  #           docker push meetalodariya/worker |
+  #           docker push meetalodariya/nginx
 
 workflows:
   build-test-deploy:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build
+      - build-deploy
