@@ -29,13 +29,13 @@ jobs:
           command: docker build ./client -t $DOCKERHUB_USERNAME/client:${CIRCLE_SHA1:0:8}
       - run:
           name: "Build: Server"
-          command: docker build ./client -t $DOCKERHUB_USERNAME/server:${CIRCLE_SHA1:0:8}
+          command: docker build ./server -t $DOCKERHUB_USERNAME/server:${CIRCLE_SHA1:0:8}
       - run:
           name: "Build: Worker"
-          command: docker build ./client -t $DOCKERHUB_USERNAME/worker:${CIRCLE_SHA1:0:8}
+          command: docker build ./worker -t $DOCKERHUB_USERNAME/worker:${CIRCLE_SHA1:0:8}
       - run:
           name: "Build: NGINX"
-          command: docker build ./client -t $DOCKERHUB_USERNAME/nginx:${CIRCLE_SHA1:0:8}
+          command: docker build ./nginx -t $DOCKERHUB_USERNAME/nginx:${CIRCLE_SHA1:0:8}
       - run:
           name: "Push images"
           command: |
