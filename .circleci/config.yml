@@ -35,31 +35,14 @@ jobs:
           command: |
             docker build ./client -t meetalodariya/client
       - run:
-          name: "Build: Server"
-          command: |
-            docker build ./client -t meetalodariya/server
-      - run:
-          name: "Build: Worker"
-          command: |
-            docker build ./client -t meetalodariya/worker
-      - run:
-          name: "Build: NGINX"
-          command: |
-            docker build ./client -t meetalodariya/nginx
-      - run:
           name: "Push images"
           command: |
+            docker login -u="${DOCKERHUB_USERNAME}" -p="${DOCKERHUB_PASSWORD}"
             if [ "$CIRCLE_BRANCH" = "master" ]; then
               docker push meetalodariya/client |
-              docker push meetalodariya/server |
-              docker push meetalodariya/worker |
-              docker push meetalodariya/nginx
             fi
 
 workflows:
   build-test-deploy:
     jobs:
-      - test
-      - build-deploy:
-          requires:
-            - test
+      - build-deploy
