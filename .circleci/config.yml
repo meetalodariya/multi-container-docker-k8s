@@ -9,6 +9,8 @@ jobs:
           password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           name: "Build: Client"
           command: |
@@ -16,52 +18,48 @@ jobs:
       - run:
           name: "Test: Client"
           command: |
-            docker run test/client npm run test -- --coverage
+            docker run -e CI=true test/client npm run test -- --coverage
 
-  build:
+  build-deploy:
     docker:
       - image: cimg/node:14.0.0
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
-        environment:
-          SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
     steps:
       - checkout
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           name: "Build: Client"
-          command: docker build -t $DOCKERHUB_USERNAME/client:${SHORT_COMMIT_HASH} ./client
+          command: |
+            docker build ./client -t meetalodariya/client
       - run:
           name: "Build: Server"
-          command: docker build -t $DOCKERHUB_USERNAME/server:${SHORT_COMMIT_HASH} ./server
+          command: |
+            docker build ./client -t meetalodariya/server
       - run:
           name: "Build: Worker"
-          command: docker build -t $DOCKERHUB_USERNAME/worker:${SHORT_COMMIT_HASH} ./worker
+          command: |
+            docker build ./client -t meetalodariya/worker
       - run:
           name: "Build: NGINX"
-          command: docker build -t $DOCKERHUB_USERNAME/nginx:${SHORT_COMMIT_HASH} ./nginx
-
-    deploy:
-      docker:
-        - image: cimg/node:14.0.0
-          auth:
-            username: $DOCKERHUB_USERNAME
-            password: $DOCKERHUB_PASSWORD
-          environment:
-            SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
-      steps:
-        - checkout
-        - run:
-            name: "Push Images"
-            command: |
-              docker push $DOCKERHUB_USERNAME/client:${SHORT_COMMIT_HASH} | 
-              docker push $DOCKERHUB_USERNAME/server:${SHORT_COMMIT_HASH} |
-              docker push $DOCKERHUB_USERNAME/worker:${SHORT_COMMIT_HASH} |
-              docker push $DOCKERHUB_USERNAME/nginx:${SHORT_COMMIT_HASH}
+          command: |
+            docker build ./client -t meetalodariya/nginx
+      - run:
+          name: "Push images"
+          command: |
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+              docker push meetalodariya/client |
+              docker push meetalodariya/server |
+              docker push meetalodariya/worker |
+              docker push meetalodariya/nginx
+            fi
 
 workflows:
   build-test-deploy:
-    - test
-    - build:
-        requires:
-          - test
+    jobs:
+      - test
+      - build-deploy:
+          requires:
+            - test
