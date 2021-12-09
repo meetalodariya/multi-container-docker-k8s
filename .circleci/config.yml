@@ -25,10 +25,6 @@ jobs:
       - checkout
       - setup_remote_docker:
           version: 19.03.13
-      - run:
-          name: "Set environment var"
-          command: |
-            COMMIT_HASH=${CIRCLE_SHA1:0:8}
       # - run:
       #     name: "Build: Client"
       #     command: docker build ./client -t $DOCKERHUB_USERNAME/client:${COMMIT_HASH}
@@ -41,14 +37,13 @@ jobs:
       - run:
           name: "Build: NGINX"
           command: |
-            echo "$COMMIT_HASH"
-            docker build ./client -t $DOCKERHUB_USERNAME/nginx:$COMMIT_HASH
+            docker build ./client -t $DOCKERHUB_USERNAME/nginx:${CIRCLE_SHA1:0:8}
       - run:
           name: "Push images"
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              docker push $DOCKERHUB_USERNAME/nginx:$COMMIT_HASH
+              docker push $DOCKERHUB_USERNAME/nginx:${CIRCLE_SHA1:0:8}
             fi
 
 workflows:
