@@ -33,13 +33,13 @@ jobs:
       - run:
           name: "Build: Client"
           command: |
-            docker build ./client -t meetalodariya/client
+            docker build ./server -t meetalodariya/server
       - run:
           name: "Push images"
           command: |
-            docker login -u="${DOCKERHUB_USERNAME}" -p="${DOCKERHUB_PASSWORD}"
+            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              docker push meetalodariya/client |
+              docker push meetalodariya/server |
             fi
 
 workflows:
