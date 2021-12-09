@@ -38,7 +38,7 @@ jobs:
           name: "Push images"
           command: |
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              docker push meetalodariya/server |
+              docker push meetalodariya/server
             fi
 
 workflows:
