@@ -24,9 +24,9 @@ jobs:
       - checkout
       - setup_remote_docker:
           version: 19.03.13
-      - run:
-          name: "Build: Client"
-          command: docker build ./client -t $DOCKERHUB_USERNAME/client:${CIRCLE_SHA1:0:8}
+      # - run:
+      #     name: "Build: Client"
+      #     command: docker build ./client -t $DOCKERHUB_USERNAME/client:${CIRCLE_SHA1:0:8}
       - run:
           name: "Build: Server"
           command: docker build ./server -t $DOCKERHUB_USERNAME/server:${CIRCLE_SHA1:0:8}
@@ -41,17 +41,13 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              docker push $DOCKERHUB_USERNAME/client:${CIRCLE_SHA1:0:8} |
-              docker push $DOCKERHUB_USERNAME/server:${CIRCLE_SHA1:0:8} |
-              docker push $DOCKERHUB_USERNAME/nginx:${CIRCLE_SHA1:0:8} |
+              docker push $DOCKERHUB_USERNAME/server:${CIRCLE_SHA1:0:8} 
+              docker push $DOCKERHUB_USERNAME/nginx:${CIRCLE_SHA1:0:8} 
               docker push $DOCKERHUB_USERNAME/worker:${CIRCLE_SHA1:0:8}
             fi
 
 workflows:
   build-test-deploy:
     jobs:
-      - test
-      - build-deploy:
-          requires:
-            - test
+      - build-deploy
 
