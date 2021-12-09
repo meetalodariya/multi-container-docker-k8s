@@ -32,17 +32,31 @@ jobs:
           version: 19.03.13
       - run:
           name: "Build: Client"
-          command: |
-            docker build ./server -t meetalodariya/server
+          command: docker build ./client -t meetalodariya/client
+      - run:
+          name: "Build: Server"
+          command: docker build ./client -t meetalodariya/server
+      - run:
+          name: "Build: Worker"
+          command: docker build ./client -t meetalodariya/worker
+      - run:
+          name: "Build: NGINX"
+          command: docker build ./client -t meetalodariya/nginx
       - run:
           name: "Push images"
           command: |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
-              docker push meetalodariya/server
+              docker push meetalodariya/client |
+              docker push meetalodariya/server |
+              docker push meetalodariya/worker |
+              docker push meetalodariya/nginx
             fi
 
 workflows:
   build-test-deploy:
     jobs:
-      - build-deploy
+      - test
+      - build-deploy:
+          requires:
+            - test
