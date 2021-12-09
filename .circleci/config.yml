@@ -55,10 +55,16 @@ jobs:
           SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           name: "Push Images"
-          command: echo "Pushing the images"
+          command: |
+          docker push meetalodariya/client |
+          docker push meetalodariya/server |
+          docker push meetalodariya/worker |
+          docker push meetalodariya/nginx 
+
 
 workflows:
   build-test-deploy:
