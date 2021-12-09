@@ -26,24 +26,35 @@ jobs:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
-        environment:
-          SHORT_COMMIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -8)
     steps:
       - checkout
       - setup_remote_docker:
           version: 19.03.13
       - run:
-          name: "Build: Client"
-          command: docker build ./client -t meetalodariya/client
+          name: "Build and save: Client"
+          command: |
+            mkdir -p /build-caches
+            docker build ./client -t meetalodariya/client
+            docker save -o /build-caches/client.tar meetalodariya/client
       - run:
-          name: "Build: Server"
-          command: docker build ./server -t meetalodariya/server
+          name: "Build and save: Server"
+          command: |
+            docker build ./client -t meetalodariya/server
+            docker save -o /build-caches/server.tar meetalodariya/server
       - run:
-          name: "Build: Worker"
-          command: docker build ./worker -t meetalodariya/worker
+          name: "Build and save: Worker"
+          command: |
+            docker build ./client -t meetalodariya/worker
+            docker save -o /build-caches/worker.tar meetalodariya/worker
       - run:
-          name: "Build: NGINX"
-          command: docker build ./nginx -t meetalodariya/nginx
+          name: "Build and save: NGINX"
+          command: |
+            docker build ./client -t meetalodariya/nginx
+            docker save -o /build-caches/nginx.tar meetalodariya/nginx
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - /build-caches/*     
 
   deploy:
     docker:
@@ -51,12 +62,12 @@ jobs:
         auth:
           username: $DOCKERHUB_USERNAME
           password: $DOCKERHUB_PASSWORD
-        environment:
-          SHORT_COMMIT_HASH: $CIRCLE_SHA1 | cut -c1-8
     steps:
       - checkout
       - setup_remote_docker:
           version: 19.03.13
+      - attach_workspace:
+          at: /tmp/workspace    
       - run:
           name: "Push Images"
           command: >-
