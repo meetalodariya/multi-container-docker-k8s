@@ -10,12 +10,10 @@ jobs:
           version: 19.03.13
       - run:
           name: "Build: Client"
-          command: |
-            docker build -t test/client -f ./client/Dockerfile.dev ./client
+          command: docker build -t test/client -f ./client/Dockerfile.dev ./client
       - run:
           name: "Test: Client"
-          command: |
-            docker run -e CI=true test/client npm run test -- --coverage
+          command: docker run -e CI=true test/client npm run test -- --coverage
 
   build-deploy:
     docker:
@@ -39,8 +37,9 @@ jobs:
       - run:
           name: "Push images"
           command: |
-            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             if [ "$CIRCLE_BRANCH" = "master" ]; then
+              echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker push $DOCKERHUB_USERNAME/client:${CIRCLE_SHA1:0:8}
               docker push $DOCKERHUB_USERNAME/server:${CIRCLE_SHA1:0:8} 
               docker push $DOCKERHUB_USERNAME/nginx:${CIRCLE_SHA1:0:8} 
               docker push $DOCKERHUB_USERNAME/worker:${CIRCLE_SHA1:0:8}
@@ -49,5 +48,7 @@ jobs:
 workflows:
   build-test-deploy:
     jobs:
-      - build-deploy
-
+      - test
+      - build-deploy:
+          requires:
+            - test
